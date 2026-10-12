@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SYSTEM: Gentleman & CS Monarch Protocol</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        system: {
+                            bg: '#02050e',
+                            panel: 'rgba(8, 16, 36, 0.9)',
+                            border: '#00f3ff',
+                            cyan: '#00f3ff',
+                            gold: '#ffd700',
+                            red: '#ff2a5f',
+                            purple: '#b5179e',
+                            blue: '#1a65fe'
+                        }
+                    },
+                    fontFamily: {
+                        orbitron: ['Orbitron', 'sans-serif'],
+                        rajdhani: ['Rajdhani', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #02050e;
+            background-image: 
+                radial-gradient(circle at 50% 0%, rgba(0, 243, 255, 0.18) 0%, transparent 60%),
+                radial-gradient(circle at 85% 85%, rgba(181, 23, 158, 0.12) 0%, transparent 50%),
+                linear-gradient(to bottom, #02050e, #060e24);
+            background-attachment: fixed;
+            color: #d1f7ff;
+            font-family: 'Rajdhani', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        /* Glassmorphism System HUD Panel */
+        .system-panel {
+            background: rgba(6, 15, 33, 0.88);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(0, 243, 255, 0.35);
+            box-shadow: 0 0 25px rgba(0, 243, 255, 0.12), inset 0 0 15px rgba(0, 243, 255, 0.04);
+        }
+
+        .system-panel-gold {
+            background: rgba(24, 18, 6, 0.92);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.15), inset 0 0 15px rgba(255, 215, 0, 0.05);
+        }
+
+        /* Glow Text Utilities */
+        .glow-cyan {
+            text-shadow: 0 0 8px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
+        }
+        .glow-gold {
+            text-shadow: 0 0 8px rgba(255, 215, 0, 0.8), 0 0 20px rgba(255, 215, 0, 0.4);
+        }
+        .glow-red {
+            text-shadow: 0 0 8px rgba(255, 42, 95, 0.8), 0 0 20px rgba(255, 42, 95, 0.4);
+        }
+
+        /* System Grid Lines Overlay */
+        .system-grid {
+            background-size: 28px 28px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 243, 255, 0.025) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 243, 255, 0.025) 1px, transparent 1px);
+        }
+
+        /* Animated Pulse */
+        @keyframes systemPulse {
+            0%, 100% { border-color: rgba(0, 243, 255, 0.35); box-shadow: 0 0 15px rgba(0, 243, 255, 0.15); }
+            50% { border-color: rgba(0, 243, 255, 0.85); box-shadow: 0 0 25px rgba(0, 243, 255, 0.4); }
+        }
+        .system-pulse {
+            animation: systemPulse 3.5s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(2, 5, 14, 0.8); }
+        ::-webkit-scrollbar-thumb { background: #00f3ff; border-radius: 2px; }
+
+        /* Custom Checkbox */
+        .system-checkbox {
+            appearance: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid #00f3ff;
+            background: rgba(0, 243, 255, 0.05);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        .system-checkbox:checked {
+            background: #00f3ff;
+            box-shadow: 0 0 10px #00f3ff;
+        }
+        .system-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: #02050e;
+            font-weight: 900;
+            font-size: 15px;
+            top: -3px;
+            left: 3px;
+        }
+
+        .scanline {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, transparent 50%, rgba(0, 243, 255, 0.02) 51%);
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="system-grid min-h-screen pb-20 relative overflow-x-hidden">
+    <div class="scanline"></div>
+
+    <!-- Header System Banner -->
+    <header class="w-full bg-slate-950/80 border-b border-system-cyan/40 py-2.5 px-4 sticky top-0 z-40 backdrop-blur-md">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <span class="relative flex h-2.5 w-2.5">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-system-cyan opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-system-cyan"></span>
+                </span>
+                <span class="font-orbitron text-[11px] tracking-widest text-system-cyan font-bold glow-cyan">
+                    SYSTEM ACTIVE
+                </span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="playSystemSound('click')" class="text-xs font-orbitron text-system-cyan bg-cyan-950/40 border border-system-cyan/40 px-2 py-1 rounded hover:bg-cyan-900/50">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="openInstallGuide()" class="text-xs font-orbitron bg-system-cyan/10 hover:bg-system-cyan/20 border border-system-cyan/50 text-system-cyan px-2.5 py-1 rounded transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-mobile-screen"></i> APP GUIDE
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+
+        <!-- Player Status HUD -->
+        <section class="system-panel rounded-xl p-4 relative overflow-hidden system-pulse">
+            <div class="absolute -right-4 -bottom-4 opacity-10 text-system-cyan text-8xl font-orbitron pointer-events-none">
+                S
+            </div>
+            
+            <div class="flex items-center justify-between border-b border-system-cyan/25 pb-3 mb-3">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 rounded border-2 border-system-cyan bg-cyan-950/80 flex items-center justify-center shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                        <i class="fa-solid fa-crown text-2xl text-system-cyan"></i>
+                    </div>
+                    <div>
+                        <div class="text-[10px] text-gray-400 font-orbitron uppercase tracking-widest">PLAYER TITLE</div>
+                        <h2 class="font-orbitron text-base font-bold text-white tracking-wide glow-cyan" id="player-title">
+                            CS SCHOLAR & MONK
+                        </h2>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <div class="text-[10px] text-gray-400 font-orbitron">HUNTER RANK</div>
+                    <span id="player-rank" class="font-orbitron text-xs font-black text-system-gold glow-gold">
+                        E-RANK ASPIRANT
+                    </span>
+                </div>
+            </div>
+
+            <!-- Level & EXP Progress -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center text-xs font-orbitron">
+                    <span class="text-system-cyan font-semibold">LEVEL <span id="player-level" class="text-base font-bold text-white">1</span></span>
+                    <span class="text-gray-400">EXP: <span id="current-exp" class="text-system-cyan font-bold">0</span> / <span id="max-exp">500</span></span>
+                </div>
+                <div class="w-full bg-slate-950 h-3 rounded p-0.5 border border-system-cyan/30">
+                    <div id="exp-bar" class="bg-gradient-to-r from-blue-600 to-system-cyan h-full rounded transition-all duration-500 shadow-[0_0_12px_rgba(0,243,255,0.8)]" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="grid grid-cols-4 gap-2 mt-4 pt-3 border-t border-system-cyan/20 text-center">
+                <div class="bg-cyan-950/20 p-1.5 rounded border border-system-cyan/20">
+                    <div class="text-[9px] text-gray-400 font-orbitron">STREAK</div>
+                    <div id="stat-streak" class="font-orbitron font-bold text-xs text-system-cyan">0 DAYS</div>
+                </div>
+                <div class="bg-cyan-950/20 p-1.5 rounded border border-system-cyan/20">
+                    <div class="text-[9px] text-gray-400 font-orbitron">COMPLETED</div>
+                    <div id="stat-completed" class="font-orbitron font-bold text-xs text-system-gold">0/30</div>
+                </div>
+                <div class="bg-cyan-950/20 p-1.5 rounded border border-system-cyan/20">
+                    <div class="text-[9px] text-gray-400 font-orbitron">CHARISMA</div>
+                    <div id="stat-social" class="font-orbitron font-bold text-xs text-purple-400">+<span id="stat-social-val">0</span></div>
+                </div>
+                <div class="bg-cyan-950/20 p-1.5 rounded border border-system-cyan/20">
+                    <div class="text-[9px] text-gray-400 font-orbitron">CS POWER</div>
+                    <div id="stat-cs" class="font-orbitron font-bold text-xs text-green-400">+<span id="stat-cs-val">0</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Day Carousel Controls -->
+        <div class="flex items-center justify-between gap-2 bg-slate-950/90 p-2 rounded-xl border border-system-cyan/30">
+            <button onclick="changeDay(-1)" class="w-9 h-9 rounded-lg bg-cyan-950/60 border border-system-cyan/40 text-system-cyan flex items-center justify-center hover:bg-system-cyan/20 active:scale-95 transition">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            
+            <div class="flex-1 text-center">
+                <label for="day-select" class="sr-only">Select Day</label>
+                <select id="day-select" onchange="jumpToDay(this.value)" class="bg-slate-900 text-system-cyan font-orbitron font-bold text-center py-1.5 px-2 rounded-lg border border-system-cyan/40 w-full focus:outline-none focus:border-system-cyan text-xs">
+                    <!-- Options injected dynamically -->
+                </select>
+            </div>
+
+            <button onclick="changeDay(1)" class="w-9 h-9 rounded-lg bg-cyan-950/60 border border-system-cyan/40 text-system-cyan flex items-center justify-center hover:bg-system-cyan/20 active:scale-95 transition">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <!-- Daily Mission Protocol Panel -->
+        <section class="system-panel rounded-xl p-4 space-y-4 relative">
+            <div class="flex items-center justify-between border-b border-system-cyan/30 pb-2.5">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-clipboard-list text-system-cyan text-base"></i>
+                    <h3 class="font-orbitron text-xs font-bold tracking-wider text-system-cyan uppercase">
+                        QUEST PROTOCOL: DAY <span id="quest-day-num">1</span>
+                    </h3>
+                </div>
+                <span id="quest-status-badge" class="font-orbitron text-[9px] px-2 py-0.5 rounded border border-system-red text-system-red bg-red-950/30 font-bold uppercase">
+                    INCOMPLETE
+                </span>
+            </div>
+
+            <!-- Focus Focus Banner -->
+            <div class="bg-cyan-950/30 p-2.5 rounded-lg border-l-2 border-system-cyan">
+                <div class="text-[10px] font-orbitron text-system-gold uppercase tracking-wider font-bold">
+                    <i class="fa-solid fa-bullseye mr-1"></i> DAILY HIGHLIGHT
+                </div>
+                <h4 id="day-focus-title" class="text-sm font-bold text-white font-rajdhani mt-0.5">
+                    -- Loading Focus --
+                </h4>
+            </div>
+
+            <!-- Task Pillars Container -->
+            <div id="pillars-container" class="space-y-4">
+                <!-- Injected dynamically via JS -->
+            </div>
+
+            <!-- Custom Quest Creator -->
+            <div class="pt-3 border-t border-system-cyan/20 space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-orbitron text-xs text-system-cyan font-bold"><i class="fa-solid fa-plus-circle mr-1"></i> ADD CUSTOM QUEST</span>
+                </div>
+                <div class="flex gap-2">
+                    <input type="text" id="custom-task-input" placeholder="e.g. Clean room, 100 reps grip trainer..." class="flex-1 bg-slate-950 border border-system-cyan/30 rounded px-2.5 py-1.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-system-cyan font-sans">
+                    <button onclick="addCustomTask()" class="bg-system-cyan/20 border border-system-cyan text-system-cyan font-orbitron text-xs px-3 py-1.5 rounded font-bold hover:bg-system-cyan/30">
+                        ADD
+                    </button>
+                </div>
+            </div>
+
+            <!-- Day Progress Bar -->
+            <div class="space-y-1 pt-2">
+                <div class="flex justify-between text-[11px] font-orbitron text-gray-400">
+                    <span>DAILY MISSIONS COMPLETION</span>
+                    <span id="day-pct-text">0%</span>
+                </div>
+                <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-system-cyan/30">
+                    <div id="day-progress-bar" class="bg-system-cyan h-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Reflection Log -->
+            <div class="pt-2 border-t border-system-cyan/20 space-y-2">
+                <label for="daily-reflection" class="font-orbitron text-xs text-system-cyan flex items-center justify-between">
+                    <span><i class="fa-solid fa-pen-to-square mr-1"></i> GENTLEMAN SYSTEM LOG</span>
+                    <span class="text-[9px] text-gray-500 font-normal">Auto-Saved</span>
+                </label>
+                <textarea id="daily-reflection" rows="3" oninput="saveReflection()" placeholder="Record conversations, social insights, LeetCode learnings, or wins today..." class="w-full bg-slate-950/80 border border-system-cyan/30 rounded p-2.5 text-xs text-cyan-100 placeholder-gray-600 focus:outline-none focus:border-system-cyan font-sans resize-none"></textarea>
+            </div>
+
+            <!-- Claim Button -->
+            <button id="btn-complete-quest" onclick="completeQuest()" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-orbitron font-bold text-xs tracking-widest rounded-lg shadow-lg shadow-cyan-900/40 border border-system-cyan/60 active:scale-95 transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-check-double"></i> CLAIM DAILY REWARD (+150 EXP)
+            </button>
+        </section>
+
+        <!-- Penalty Warning Banner -->
+        <section class="system-panel rounded-xl p-3.5 border-system-red/40 bg-red-950/10 space-y-2.5">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-system-red">
+                    <i class="fa-solid fa-triangle-exclamation animate-pulse"></i>
+                    <span class="font-orbitron text-xs font-bold tracking-wider">PENALTY ZONE WARNING</span>
+                </div>
+                <span class="text-[9px] font-orbitron text-gray-400">MIDNIGHT RESET</span>
+            </div>
+            <p class="text-[11px] text-gray-300 leading-relaxed">
+                Failure to maintain daily discipline results in stagnation. Execute physical & CS protocols without compromise.
+            </p>
+            <div class="flex justify-between items-center pt-1 border-t border-red-900/40">
+                <button onclick="resetCurrentDay()" class="text-[11px] font-orbitron text-gray-400 hover:text-system-cyan transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Reset Today
+                </button>
+                <button onclick="confirmResetAll()" class="text-[11px] font-orbitron text-system-red/80 hover:text-system-red transition">
+                    <i class="fa-solid fa-trash-can mr-1"></i> Reset All System Progress
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Reward Popup Modal -->
+    <div id="reward-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="system-panel-gold rounded-xl p-5 max-w-sm w-full text-center space-y-4 relative border-2 border-system-gold">
+            <div class="w-14 h-14 rounded-full bg-yellow-500/20 border-2 border-system-gold mx-auto flex items-center justify-center text-system-gold text-2xl shadow-[0_0_20px_rgba(255,215,0,0.6)]">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+            
+            <div>
+                <span class="font-orbitron text-[10px] text-system-gold tracking-widest font-bold uppercase">SYSTEM NOTIFICATION</span>
+                <h2 class="font-orbitron text-lg font-black text-white glow-gold mt-0.5">QUEST PROTOCOL CLEARED!</h2>
+                <p class="text-xs text-gray-300 mt-1">Daily stats updated successfully.</p>
+            </div>
+
+            <!-- Rewards Summary -->
+            <div class="bg-black/60 rounded-lg p-3 border border-system-gold/30 space-y-2 text-left">
+                <div class="flex items-center justify-between text-xs font-orbitron">
+                    <span class="text-gray-300"><i class="fa-solid fa-bolt text-system-gold mr-1"></i> EXP AWARD</span>
+                    <span class="text-system-gold font-bold">+150 EXP</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-orbitron">
+                    <span class="text-gray-300"><i class="fa-solid fa-comments text-purple-400 mr-1"></i> CHARISMA STAT</span>
+                    <span class="text-purple-400 font-bold">+2 POINTS</span>
+                </div>
+                <div class="flex items-center justify-between text-xs font-orbitron">
+                    <span class="text-gray-300"><i class="fa-solid fa-code text-green-400 mr-1"></i> CS POWER</span>
+                    <span class="text-green-400 font-bold">+2 POINTS</span>
+                </div>
+            </div>
+
+            <button onclick="closeRewardModal()" class="w-full py-2.5 bg-gradient-to-r from-yellow-600 to-amber-500 hover:from-yellow-500 hover:to-amber-400 text-black font-orbitron font-extrabold text-xs tracking-widest rounded shadow-lg active:scale-95 transition">
+                CONTINUE EVOLUTION
+            </button>
+        </div>
+    </div>
+
+    <!-- App Setup Guide Modal -->
+    <div id="install-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="system-panel rounded-xl p-5 max-w-sm w-full space-y-4 relative border-system-cyan">
+            <div class="flex items-center justify-between border-b border-system-cyan/30 pb-2">
+                <h3 class="font-orbitron text-xs text-system-cyan font-bold flex items-center gap-2">
+                    <i class="fa-brands fa-android text-sm"></i> INSTALL TO HOME SCREEN
+                </h3>
+                <button onclick="closeInstallGuide()" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <p class="text-xs text-gray-300 leading-relaxed">
+                Launch this System app directly from your phone home screen like a native application:
+            </p>
+
+            <ol class="space-y-2.5 text-xs text-gray-200 font-sans">
+                <li class="flex items-start gap-2">
+                    <span class="w-4 h-4 rounded-full bg-system-cyan/20 border border-system-cyan text-system-cyan font-orbitron text-[9px] flex items-center justify-center shrink-0 mt-0.5">1</span>
+                    <span>Open in <strong>Google Chrome</strong> on Android.</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="w-4 h-4 rounded-full bg-system-cyan/20 border border-system-cyan text-system-cyan font-orbitron text-[9px] flex items-center justify-center shrink-0 mt-0.5">2</span>
+                    <span>Tap Chrome menu options (<strong>3 dots <i class="fa-solid fa-ellipsis-vertical"></i></strong> top right).</span>
+                </li>
+                <li class="flex items-start gap-2">
+                    <span class="w-4 h-4 rounded-full bg-system-cyan/20 border border-system-cyan text-system-cyan font-orbitron text-[9px] flex items-center justify-center shrink-0 mt-0.5">3</span>
+                    <span>Tap <strong>"Add to Home screen"</strong> / <strong>"Install app"</strong>.</span>
+                </li>
+            </ol>
+
+            <button onclick="closeInstallGuide()" class="w-full py-2 bg-system-cyan/20 border border-system-cyan text-system-cyan font-orbitron font-bold text-xs rounded">
+                CLOSE GUIDE
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /*
+           5 PILLARS GENTLEMAN & CS MONARCH DATABASE (30 DAYS)
+        */
+        const BASE_PILLARS = [
+            { id: 'physical', name: 'PHYSICAL GROWTH & GROOMING', icon: 'fa-dumbbell', color: 'text-blue-400' },
+            { id: 'mental', name: 'MENTAL GROWTH & STOICISM', icon: 'fa-brain', color: 'text-cyan-400' },
+            { id: 'social', name: 'SOCIAL MASTERY & CHARISMA', icon: 'fa-comments', color: 'text-purple-400' },
+            { id: 'discipline', name: 'SELF-GROWTH & DISCIPLINE', icon: 'fa-shield-halved', color: 'text-gold' },
+            { id: 'cs_wealth', name: 'CS MASTERY & WEALTH ENGINEERING', icon: 'fa-code', color: 'text-green-400' }
+        ];
+
+        // Unique Highlights and Tasks across 30 Days
+        const DAY_FOCUSES = [
+            "Posture, Presence & First Impressions",
+            "Active Listening & Eye Contact Control",
+            "LeetCode DSA Array/String Foundations",
+            "Cold Shower & Dopamine Detox",
+            "Witty Banter & Playful Humor Exercise",
+            "System Design & OOP Architecture",
+            "Financial Literacy & Investing Basics",
+            "Deep Vocal Tone & Speech Pacing",
+            "Grooming, Fragrance & Tailored Look",
+            "LeetCode Linked List & Hash Maps",
+            "Charming Compliment Delivery",
+            "Stoic Calm Under Pressure",
+            "Git Workflow & Open Source / Portfolio Work",
+            "Charismatic Body Language & Space Usage",
+            "Digital Detox & Screen Time Audit",
+            "LeetCode Trees & Graph Algorithms",
+            "Financial Side-Hustle Automation",
+            "Table Manners & Modern Etiquette",
+            "Social Storytelling & Humorous Delivery",
+            "Operating Systems & Low-Level CS Concepts",
+            "Flirting Dynamics & Playful Tension",
+            "Hyper-Focused 90-Min Deep Work Session",
+            "LeetCode Dynamic Programming Practice",
+            "Personal Finance & Budget Optimization",
+            "High-Status Confidence & Self-Efficacy",
+            "Database Indexing & Query Tuning",
+            "Networking with Senior Engineers & Mentors",
+            "Unshakable Emotional Control",
+            "Full Stack App Feature Deployment",
+            "Shadow Monarch Gentleman Graduation"
+        ];
+
+        // Generator for 30 unique dynamic questlines
+        function getQuestDataForDay(dayNum) {
+            const focus = DAY_FOCUSES[dayNum - 1] || "Continuous Self-Mastery Protocol";
+            return {
+                day: dayNum,
+                focus: focus,
+                tasks: {
+                    physical: [
+                        "50 Pushups / 20 Pullups / Core Workout session",
+                        "Skincare routine (Cleanser + Moisturizer + Sunscreen) & Neat Grooming",
+                        "Posture Check: Keep shoulders back and spine straight all day"
+                    ],
+                    mental: [
+                        "Read 15 mins of Stoicism/Psychology (e.g. Meditations / Carnegie)",
+                        "10 Mins Silent Meditation / Box Breathing exercise",
+                        "Zero phone usage for first 30 mins after waking up"
+                    ],
+                    social: [
+                        `Practice '${focus}' in social interactions today`,
+                        "Hold strong, relaxed eye contact and smile warmly during chats",
+                        "Give 1 genuine, specific compliment to a friend or colleague"
+                    ],
+                    discipline: [
+                        "Track screen time (Keep non-productive phone time < 2 hours)",
+                        "Journal daily reflection log & evening gratitude notes",
+                        "Sleep protocol: Screen-off 30 mins before sleep"
+                    ],
+                    cs_wealth: [
+                        "Solve 1 LeetCode/DSA problem (Focus on clean logic)",
+                        "Work 45 mins on CS Project / System Architecture / Web Dev",
+                        "Read 1 article on Personal Finance, Stocks, or Tech Trends"
+                    ]
+                }
+            };
+        }
+
+        /*
+           RANK TITLES BY LEVEL
+        */
+        const RANKS = [
+            { maxLvl: 2, title: "E-RANK ASPIRANT", color: "text-gray-400" },
+            { maxLvl: 5, title: "D-RANK SCHOLAR", color: "text-green-400" },
+            { maxLvl: 9, title: "C-RANK CHARISMATIC", color: "text-cyan-400" },
+            { maxLvl: 14, title: "B-RANK DIPLOMAT", color: "text-blue-400" },
+            { maxLvl: 20, title: "A-RANK CS ARCHITECT", color: "text-purple-400" },
+            { maxLvl: 28, title: "S-RANK GENTLEMAN", color: "text-system-gold" },
+            { maxLvl: 99, title: "SHADOW MONARCH GENTLEMAN", color: "text-system-red" }
+        ];
+
+        /* STATE MANAGEMENT */
+        let currentDay = 1;
+        let userData = {
+            level: 1,
+            exp: 0,
+            streak: 0,
+            charismaStat: 0,
+            csStat: 0,
+            completedDays: [],
+            dayTasks: {}, // { dayNum: { taskId: boolean } }
+            customTasks: {}, // { dayNum: ["text1", "text2"] }
+            reflections: {} // { dayNum: "text" }
+        };
+
+        // Web Audio Synth SFX
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSystemSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+                } else if (type === 'check') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.exponentialRampToValueAtTime(659.25, audioCtx.currentTime + 0.12); // E5
+                    gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.12);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.12);
+                } else if (type === 'complete') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(554.37, audioCtx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.2);
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.35);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+                }
+            } catch(e) {}
+        }
+
+        function loadSavedData() {
+            const saved = localStorage.getItem('solo_leveling_gentleman_v2');
+            if (saved) {
+                try { userData = JSON.parse(saved); } catch(e){}
+            }
+
+            // Populate Day Selector
+            const select = document.getElementById('day-select');
+            select.innerHTML = '';
+            for (let i = 1; i <= 30; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = `DAY ${i}: ${DAY_FOCUSES[i-1].substring(0, 22)}...`;
+                select.appendChild(opt);
+            }
+
+            renderAll();
+        }
+
+        function saveData() {
+            localStorage.setItem('solo_leveling_gentleman_v2', JSON.stringify(userData));
+        }
+
+        function renderAll() {
+            renderHUD();
+            renderQuestPanel();
+        }
+
+        function renderHUD() {
+            document.getElementById('player-level').textContent = userData.level;
+            const maxExp = userData.level * 500;
+            document.getElementById('current-exp').textContent = userData.exp;
+            document.getElementById('max-exp').textContent = maxExp;
+
+            const expPct = Math.min(100, Math.floor((userData.exp / maxExp) * 100));
+            document.getElementById('exp-bar').style.width = `${expPct}%`;
+
+            let currentRank = RANKS[0];
+            for (let r of RANKS) {
+                if (userData.level >= r.maxLvl) currentRank = r;
+            }
+            const rankEl = document.getElementById('player-rank');
+            rankEl.textContent = currentRank.title;
+            rankEl.className = `font-orbitron text-xs font-black ${currentRank.color} glow-gold`;
+
+            document.getElementById('stat-streak').textContent = `${userData.completedDays.length} DAYS`;
+            document.getElementById('stat-completed').textContent = `${userData.completedDays.length}/30`;
+            document.getElementById('stat-social-val').textContent = userData.charismaStat;
+            document.getElementById('stat-cs-val').textContent = userData.csStat;
+        }
+
+        function renderQuestPanel() {
+            const qData = getQuestDataForDay(currentDay);
+            document.getElementById('day-select').value = currentDay;
+            document.getElementById('quest-day-num').textContent = currentDay;
+            document.getElementById('day-focus-title').textContent = qData.focus;
+
+            const isCompleted = userData.completedDays.includes(currentDay);
+            const badge = document.getElementById('quest-status-badge');
+            if (isCompleted) {
+                badge.textContent = "COMPLETED";
+                badge.className = "font-orbitron text-[9px] px-2 py-0.5 rounded border border-green-400 text-green-400 bg-green-950/40 font-bold uppercase glow-cyan";
+            } else {
+                badge.textContent = "INCOMPLETE";
+                badge.className = "font-orbitron text-[9px] px-2 py-0.5 rounded border border-system-red text-system-red bg-red-950/30 font-bold uppercase";
+            }
+
+            if (!userData.dayTasks[currentDay]) {
+                userData.dayTasks[currentDay] = {};
+            }
+
+            const pillarsContainer = document.getElementById('pillars-container');
+            pillarsContainer.innerHTML = '';
+
+            let totalTasks = 0;
+            let completedTasks = 0;
+
+            // Render Core 5 Pillars
+            BASE_PILLARS.forEach(pillar => {
+                const pBox = document.createElement('div');
+                pBox.className = "space-y-2 bg-slate-950/40 p-2.5 rounded-lg border border-system-cyan/15";
+
+                pBox.innerHTML = `
+                    <div class="flex items-center space-x-2 text-xs font-orbitron font-bold ${pillar.color}">
+                        <i class="fa-solid ${pillar.icon}"></i>
+                        <span>${pillar.name}</span>
+                    </div>
+                `;
+
+                const taskList = document.createElement('div');
+                taskList.className = "space-y-1.5 pl-1";
+
+                const pillarTasks = qData.tasks[pillar.id] || [];
+                pillarTasks.forEach((tText, tIdx) => {
+                    totalTasks++;
+                    const taskId = `${pillar.id}_${tIdx}`;
+                    const isChecked = !!userData.dayTasks[currentDay][taskId];
+                    if (isChecked) completedTasks++;
+
+                    const label = document.createElement('label');
+                    label.className = `flex items-start space-x-2.5 p-1.5 rounded transition cursor-pointer ${
+                        isChecked ? 'bg-cyan-950/30 text-system-cyan' : 'text-gray-300 hover:text-white'
+                    }`;
+
+                    label.innerHTML = `
+                        <input type="checkbox" class="system-checkbox mt-0.5" ${isChecked ? 'checked' : ''} onchange="toggleTaskState('${taskId}')">
+                        <span class="text-xs font-rajdhani ${isChecked ? 'line-through text-cyan-200/60' : ''}">${tText}</span>
+                    `;
+                    taskList.appendChild(label);
+                });
+
+                pBox.appendChild(taskList);
+                pillarsContainer.appendChild(pBox);
+            });
+
+            // Render Custom Added Tasks for Today
+            const customList = userData.customTasks[currentDay] || [];
+            if (customList.length > 0) {
+                const cBox = document.createElement('div');
+                cBox.className = "space-y-2 bg-purple-950/20 p-2.5 rounded-lg border border-purple-500/30";
+                cBox.innerHTML = `
+                    <div class="flex items-center space-x-2 text-xs font-orbitron font-bold text-purple-400">
+                        <i class="fa-solid fa-star"></i>
+                        <span>CUSTOM USER PROTOCOLS</span>
+                    </div>
+                `;
+                const cTaskList = document.createElement('div');
+                cTaskList.className = "space-y-1.5 pl-1";
+
+                customList.forEach((cText, cIdx) => {
+                    totalTasks++;
+                    const taskId = `custom_${cIdx}`;
+                    const isChecked = !!userData.dayTasks[currentDay][taskId];
+                    if (isChecked) completedTasks++;
+
+                    const label = document.createElement('label');
+                    label.className = `flex items-start space-x-2.5 p-1.5 rounded transition cursor-pointer ${
+                        isChecked ? 'bg-purple-950/30 text-purple-300' : 'text-gray-300 hover:text-white'
+                    }`;
+
+                    label.innerHTML = `
+                        <input type="checkbox" class="system-checkbox mt-0.5" ${isChecked ? 'checked' : ''} onchange="toggleTaskState('${taskId}')">
+                        <span class="text-xs font-rajdhani ${isChecked ? 'line-through text-purple-300/60' : ''}">${cText}</span>
+                    `;
+                    cTaskList.appendChild(label);
+                });
+
+                cBox.appendChild(cTaskList);
+                pillarsContainer.appendChild(cBox);
+            }
+
+            // Calculations
+            const dayPct = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            document.getElementById('day-progress-bar').style.width = `${dayPct}%`;
+            document.getElementById('day-pct-text').textContent = `${dayPct}% (${completedTasks}/${totalTasks})`;
+
+            document.getElementById('daily-reflection').value = userData.reflections[currentDay] || '';
+        }
+
+        function toggleTaskState(taskId) {
+            playSystemSound('check');
+            if (!userData.dayTasks[currentDay]) userData.dayTasks[currentDay] = {};
+            userData.dayTasks[currentDay][taskId] = !userData.dayTasks[currentDay][taskId];
+            saveData();
+            renderAll();
+        }
+
+        function addCustomTask() {
+            const input = document.getElementById('custom-task-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            playSystemSound('click');
+            if (!userData.customTasks[currentDay]) userData.customTasks[currentDay] = [];
+            userData.customTasks[currentDay].push(val);
+            input.value = '';
+            saveData();
+            renderAll();
+        }
+
+        function saveReflection() {
+            const text = document.getElementById('daily-reflection').value;
+            userData.reflections[currentDay] = text;
+            saveData();
+        }
+
+        function changeDay(delta) {
+            playSystemSound('click');
+            let target = currentDay + delta;
+            if (target < 1) target = 1;
+            if (target > 30) target = 30;
+            currentDay = target;
+            renderQuestPanel();
+        }
+
+        function jumpToDay(val) {
+            playSystemSound('click');
+            currentDay = parseInt(val, 10);
+            renderQuestPanel();
+        }
+
+        function completeQuest() {
+            if (!userData.completedDays.includes(currentDay)) {
+                userData.completedDays.push(currentDay);
+                userData.exp += 150;
+                userData.charismaStat += 2;
+                userData.csStat += 2;
+
+                const maxExp = userData.level * 500;
+                if (userData.exp >= maxExp) {
+                    userData.level += 1;
+                    userData.exp -= maxExp;
+                }
+
+                saveData();
+                renderAll();
+                playSystemSound('complete');
+                document.getElementById('reward-modal').classList.remove('hidden');
+            } else {
+                alert("SYSTEM: Day " + currentDay + " quest rewards have already been claimed!");
+            }
+        }
+
+        function closeRewardModal() {
+            playSystemSound('click');
+            document.getElementById('reward-modal').classList.add('hidden');
+            if (currentDay < 30) changeDay(1);
+        }
+
+        function resetCurrentDay() {
+            if (confirm(`Reset progress and tasks for Day ${currentDay}?`)) {
+                playSystemSound('click');
+                userData.dayTasks[currentDay] = {};
+                userData.customTasks[currentDay] = [];
+                userData.reflections[currentDay] = "";
+                userData.completedDays = userData.completedDays.filter(d => d !== currentDay);
+                saveData();
+                renderAll();
+            }
+        }
+
+        function confirmResetAll() {
+            if (confirm("DANGER: Wipe all level progress, stats, and completed system tasks?")) {
+                localStorage.removeItem('solo_leveling_gentleman_v2');
+                userData = {
+                    level: 1, exp: 0, streak: 0, charismaStat: 0, csStat: 0,
+                    completedDays: [], dayTasks: {}, customTasks: {}, reflections: {}
+                };
+                currentDay = 1;
+                saveData();
+                renderAll();
+            }
+        }
+
+        function openInstallGuide() {
+            playSystemSound('click');
+            document.getElementById('install-modal').classList.remove('hidden');
+        }
+
+        function closeInstallGuide() {
+            playSystemSound('click');
+            document.getElementById('install-modal').classList.add('hidden');
+        }
+
+        window.onload = function() {
+            loadSavedData();
+        };
+    </script>
+</body>
+</html>
